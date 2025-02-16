@@ -1,0 +1,190 @@
+# Define environment variables
+ARG UBUNTU_VERSION=24.04
+ARG QEMU_VERSION=stable-10.0
+ARG OPENOCD_REPO=https://github.com/openocd-org/openocd.git
+ARG QEMU_REPO=https://gitlab.com/qemu-project/qemu.git
+ARG RISCV_REPO=https://github.com/riscv/riscv-gnu-toolchain
+ARG BUILD_DIR=/build
+ARG WORKSPACE_DIR=/workspace
+
+# Create the final image
+FROM ubuntu:${UBUNTU_VERSION}
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc \
+    g++ \
+    gdb \
+    clang \
+    cmake \
+    git \
+    wget \
+    libglib2.0-dev \
+    libfdt-dev \
+    libpixman-1-dev \
+    pkg-config \
+    libncurses5-dev \
+    libmpc-dev \
+    libmpfr-dev \
+    libgmp-dev \
+    gawk \
+    bison \
+    flex \
+    texinfo \
+    python3 \
+    python3-pip \
+    valgrind \
+    lcov \
+    doxygen \
+    gperf \
+    ninja-build \
+    strace \
+    ltrace \
+    curl \
+    netcat \
+    tmux \
+    screen \
+    vim \
+    clang-format \
+    htop \
+    tree \
+    zip \
+    unzip \
+    wireshark \
+    perf \
+    cppcheck \
+    splint \
+    qemu \
+    gdb-multiarch \
+    simavr \
+    bzr \
+    scons \
+    jq \
+    yq \
+    libelf-dev \
+    libudev-dev \
+    libpci-dev \
+    libiberty-dev \
+    autoconf \
+    llvm \
+    libssl-dev \
+    dkms \
+    libncurses-dev \
+    automake \
+    bc \
+    cpio \
+    rsync \
+    zlib1g-dev \
+    libexpat-dev \
+    device-tree-compiler \
+    python3-setuptools \
+    python3-pyelftools \
+    patchutils \
+    crosstool-ng \
+    libtool \
+    binutils \
+    arm-none-eabi-gcc \
+    gcc-arm-none-eabi \
+    openocd \
+    gcc-riscv64-unknown-elf \
+    gcc-multilib \
+    libtinfo5 \
+    libpython3-dev && \
+    pip3 install numpy pandas tomli meson pycotap sphinx && \
+    # Install Yocto Project dependencies
+    apt-get install -y --no-install-recommends \
+    diffstat \
+    chrpath \
+    socat \
+    python3-pexpect \
+    xz-utils \
+    debianutils \
+    iputils-ping \
+    libsdl1.2-dev \
+    xterm
+# Install required dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    sudo apt-get install autoconf automake autotools-dev curl python3 python3-pip python3-tomli libmpc-dev libmpfr-dev libgmp-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev libexpat-dev ninja-build git cmake libglib2.0-dev libslirp-dev \
+    libncurses-dev gawk flex bison openssl libssl-dev dkms libelf-dev libudev-dev libpci-dev libiberty-dev autoconf llvm \
+    build-essential \
+    gcc \
+    gdb \
+    clang \
+    cmake \
+    git \
+    wget \
+    libglib2.0-dev \
+    libfdt-dev \
+    libpixman-1-dev \
+    pkg-config \
+    libncurses5-dev \
+    libmpc-dev \
+    libmpfr-dev \
+    libgmp-dev \
+    gawk \
+    bison \
+    flex \
+    texinfo \
+    python3 \
+    python3-pip \
+    valgrind \
+    lcov \
+    doxygen \
+    gperf \
+    ninja-build && \
+    pip3 install numpy pandas tomli meson pycotap sphinx
+
+
+# Copy the compiled tools and source code from the builder stage
+#COPY --from=builder /opt/qemu /opt/qemu
+#COPY --from=builder /opt/openocd /opt/openocd
+#COPY --from=builder /opt/riscv /opt/riscv
+
+COPY  /home/kevin/vhd1/abin/riscv/newlib  /opt/riscv/newlib            
+COPY  /home/kevin/vhd1/abin/riscv/linux-multilib  /opt/riscv/linux-multilib              
+COPY  /home/kevin/vhd1/abin/arm/arm-none-eabi  /opt/arm/arm-none-eabi          
+COPY  /home/kevin/vhd1/abin/arm/arm-none-linux-gnueabihf  /opt/arm/arm-none-linux-gnueabihf 
+COPY  /home/kevin/vhd1/abin/arm/aarch64-none-linux-gnu  /opt/arm/aarch64-none-linux-gnu 
+COPY  /home/kevin/vhd1/abin/arm/aarch64-none-elf  /opt/arm/aarch64-none-elf       
+
+# Copy QEMU source code to the final image
+#COPY --from=builder ${BUILD_DIR}/qemu ${WORKSPACE_DIR}/qemu  
+
+# Set environment variables
+#ENV PATH="/opt/qemu/bin:/opt/riscv/bin:/opt/openocd/bin:${PATH}"
+ENV PATH="$PATH:\
+/opt/riscv/newlib/bin:\
+/opt/riscv/linux-multilib/bin:\
+/opt/arm/arm-none-eabi/bin:\
+/opt/arm/arm-none-linux-gnueabihf/bin:\
+/opt/arm/aarch64-none-linux-gnu/bin:\
+/opt/arm/aarch64-none-elf/bin:\
+"
+
+# Set the working directory using the runtime variable
+WORKDIR ${WORKSPACE_DIR}
+# Add a new user and group
+RUN groupadd -r duser-kevin && useradd -r -g duser-kevin -m -d /home/duser-kevin duser-kevin
+# Set the working directory
+WORKDIR ${WORKSPACE_DIR}
+# Create the directory and set permissions
+RUN mkdir -p ${WORKSPACE_DIR} && chmod 777 ${WORKSPACE_DIR}
+USER duser-kevin
+
+# Clone the FreeRTOS repository
+RUN git clone https://github.com/FreeRTOS/FreeRTOS.git ${WORKSPACE_DIR}/FreeRTOS
+
+# Clone the FreeRTOS GDB repository
+RUN git clone https://github.com/FreeRTOS/FreeRTOS-GDB.git ${WORKSPACE_DIR}/FreeRTOS-GDB
+
+# Set the default command to run when the container starts
+CMD ["bash"]
+
+# Add a .dockerignore file
+# Create a .dockerignore file to exclude unnecessary files
+RUN echo "node_modules\n.git\n*.log" > .dockerignore
+
+LABEL maintainer="kflyn825@outlook.com"
+LABEL version="1.0"
+LABEL description="A development environment for RISC-V"
+
