@@ -1,0 +1,314 @@
+# Use Ubuntu 24.04 as the base image
+FROM ubuntu:24.04
+
+# Install dependencies and necessary tools
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    git \
+    wget \
+    curl \
+    libncurses-dev \
+    flex \
+    bison \
+    gperf \
+    python3 \
+    python3-pip \
+    python3-venv \
+    python3-setuptools \
+    libssl-dev \
+    libelf-dev \
+    qemu-system-misc \
+    openocd \
+    gdb \
+    sudo \
+    libtool \
+    texinfo \
+    zlib1g-dev \
+    libexpat-dev \
+    libpython3-dev \
+    cmake \
+    ninja-build \
+    libsdl2-dev \
+    libgtk-3-dev \
+    libvte-2.91-dev \
+    libcapstone-dev \
+    libbz2-dev \
+    libcap-ng-dev \
+    libcurl4-gnutls-dev \
+    libibverbs-dev \
+    libjpeg8-dev \
+    libncurses5-dev \
+    libnuma-dev \
+    librbd-dev \
+    librdmacm-dev \
+    libsasl2-dev \
+    libseccomp-dev \
+    libsnappy-dev \
+    libssh-dev \
+    libvde-dev \
+    libvdeplug-dev \
+    libxen-dev \
+    liblzo2-dev \
+    valgrind \
+    xfslibs-dev \
+    vim \
+    nano \
+    tmux \
+    htop \
+    ccache \
+    lcov \
+    clang \
+    lld \
+    gdb-multiarch \
+    socat \
+    gawk \
+    git-core \
+    diffstat \
+    unzip \
+    gcc-multilib \
+    chrpath \
+    libsdl1.2-dev \
+    xterm \
+    gcc-arm-none-eabi \
+    strace \
+    ltrace \
+    gdbserver \
+    net-tools \
+    iputils-ping \
+    tcpdump \
+    libusb-1.0-0-dev \
+    libhidapi-dev \
+    libftdi1-dev \
+    u-boot-tools \
+    doxygen \
+    graphviz \
+    binutils \
+    pkg-config \
+    linux-tools-common \
+    linux-tools-generic \
+    linux-tools-$(uname -r) \
+    gprof \
+    cgdb \
+    urjtag \
+    simavr \
+    spike \
+    plantuml \
+    asciidoctor \
+    bazel \
+    meson \
+    clang \
+    cppcheck \
+    valgrind \
+    clang-tools \
+    qemu-user-static \
+    libboost-all-dev \
+    libyaml-dev \
+    libxml2-dev \
+    jenkins \
+    docker-compose \
+    awscli \
+    google-cloud-sdk \
+    azure-cli \
+    protobuf-compiler \
+    golang-go \
+    ruby \
+    kotlin \
+    podman \
+    ros-foxy-desktop \
+    gazebo \
+    kicad \
+    ghdl \
+    gtkwave \
+    libopenblas-dev \
+    arduino-cli
+
+# Install Python packages
+RUN pip install pylint pytest requests numpy pandas matplotlib mbed-cli freertos zephyr-build paho-mqtt pyzmq robotframework selenium scipy scikit-learn tensorflow torch platformio graphene fastapi
+
+# Add user dusr_kevin and give sudo privileges
+RUN useradd -ms /bin/bash dusr_kevin && echo "dusr_kevin ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# Set up environment for the user
+USER dusr_kevin
+WORKDIR /home/dusr_kevin
+
+# Set environment variable
+ENV PROJECTS_HOME="/home/dusr_kevin/projects"
+
+# Copy and extract prebuilt RISC-V and ARM toolchain binaries from host to container
+COPY --chown=dusr_kevin /home/kevin/vhd1/kflyn825Repos/dockerExample/toolchain /home/dusr_kevin/toolchain
+
+# Extract toolchain archives and remove tar files
+RUN mkdir -p /home/dusr_kevin/riscv/linux-multilib /home/dusr_kevin/riscv/newlib /home/dusr_kevin/arm/aarch64-none-elf /home/dusr_kevin/arm/aarch64-none-linux-gnu /home/dusr_kevin/arm/arm-none-eabi /home/dusr_kevin/arm/arm-none-linux-gnueabihf && \
+    tar -xf /home/dusr_kevin/toolchain/riscv/riscv-linux-mulitib-tool.tar.xz -C /home/dusr_kevin/riscv/linux-multilib && \
+    tar -xf /home/dusr_kevin/toolchain/riscv/riscv-newlib-tool.tar.xz -C /home/dusr_kevin/riscv/newlib && \
+    tar -xf /home/dusr_kevin/toolchain/arm/arm-gnu-toolchain-14.2.rel1-x86_64-aarch64-none-elf.tar.xz -C /home/dusr_kevin/arm/aarch64-none-elf && \
+    tar -xf /home/dusr_kevin/toolchain/arm/arm-gnu-toolchain-14.2.rel1-x86_64-aarch64-none-linux-gnu.tar.xz -C /home/dusr_kevin/arm/aarch64-none-linux-gnu && \
+    tar -xf /home/dusr_kevin/toolchain/arm/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi.tar.xz -C /home/dusr_kevin/arm/arm-none-eabi && \
+    tar -xf /home/dusr_kevin/toolchain/arm/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-linux-gnueabihf.tar.xz -C /home/dusr_kevin/arm/arm-none-linux-gnueabihf && \
+    rm -rf /home/dusr_kevin/toolchain/*.tar.xz
+
+# Add RISC-V and ARM toolchain to PATH
+ENV PATH="/home/dusr_kevin/riscv/linux-multilib/bin:/home/dusr_kevin/riscv/newlib/bin:/home/dusr_kevin/arm/aarch64-none-elf/bin:/home/dusr_kevin/arm/aarch64-none-linux-gnu/bin:/home/dusr_kevin/arm/arm-none-eabi/bin:/home/dusr_kevin/arm/arm-none-linux-gnueabihf/bin:$PATH"
+
+# Verify installation
+RUN riscv64-unknown-elf-gcc --version && qemu-system-riscv64 --version && openocd --version
+
+CMD ["/bin/bash"]
+# Use Ubuntu 24.04 as the base image
+FROM ubuntu:24.04
+
+# Install dependencies and necessary tools
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    git \
+    wget \
+    curl \
+    libncurses-dev \
+    flex \
+    bison \
+    gperf \
+    python3 \
+    python3-pip \
+    python3-venv \
+    python3-setuptools \
+    libssl-dev \
+    libelf-dev \
+    qemu-system-misc \
+    openocd \
+    gdb \
+    sudo \
+    libtool \
+    texinfo \
+    zlib1g-dev \
+    libexpat-dev \
+    libpython3-dev \
+    cmake \
+    ninja-build \
+    libsdl2-dev \
+    libgtk-3-dev \
+    libvte-2.91-dev \
+    libcapstone-dev \
+    libbz2-dev \
+    libcap-ng-dev \
+    libcurl4-gnutls-dev \
+    libibverbs-dev \
+    libjpeg8-dev \
+    libncurses5-dev \
+    libnuma-dev \
+    librbd-dev \
+    librdmacm-dev \
+    libsasl2-dev \
+    libseccomp-dev \
+    libsnappy-dev \
+    libssh-dev \
+    libvde-dev \
+    libvdeplug-dev \
+    libxen-dev \
+    liblzo2-dev \
+    valgrind \
+    xfslibs-dev \
+    vim \
+    nano \
+    tmux \
+    htop \
+    ccache \
+    lcov \
+    clang \
+    lld \
+    gdb-multiarch \
+    socat \
+    gawk \
+    git-core \
+    diffstat \
+    unzip \
+    gcc-multilib \
+    chrpath \
+    libsdl1.2-dev \
+    xterm \
+    gcc-arm-none-eabi \
+    strace \
+    ltrace \
+    gdbserver \
+    net-tools \
+    iputils-ping \
+    tcpdump \
+    libusb-1.0-0-dev \
+    libhidapi-dev \
+    libftdi1-dev \
+    u-boot-tools \
+    doxygen \
+    graphviz \
+    binutils \
+    pkg-config \
+    linux-tools-common \
+    linux-tools-generic \
+    linux-tools-$(uname -r) \
+    gprof \
+    cgdb \
+    urjtag \
+    simavr \
+    spike \
+    plantuml \
+    asciidoctor \
+    bazel \
+    meson \
+    clang \
+    cppcheck \
+    valgrind \
+    clang-tools \
+    qemu-user-static \
+    libboost-all-dev \
+    libyaml-dev \
+    libxml2-dev \
+    jenkins \
+    docker-compose \
+    awscli \
+    google-cloud-sdk \
+    azure-cli \
+    protobuf-compiler \
+    golang-go \
+    ruby \
+    kotlin \
+    podman \
+    ros-foxy-desktop \
+    gazebo \
+    kicad \
+    ghdl \
+    gtkwave \
+    libopenblas-dev \
+    arduino-cli
+
+# Install Python packages
+RUN pip install pylint pytest requests numpy pandas matplotlib mbed-cli freertos zephyr-build paho-mqtt pyzmq robotframework selenium scipy scikit-learn tensorflow torch platformio graphene fastapi
+
+# Add user dusr_kevin and give sudo privileges
+RUN useradd -ms /bin/bash dusr_kevin && echo "dusr_kevin ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# Set up environment for the user
+USER dusr_kevin
+WORKDIR /home/dusr_kevin
+
+# Set environment variable
+ENV PROJECTS_HOME="/home/dusr_kevin/projects"
+
+# Copy and extract prebuilt RISC-V and ARM toolchain binaries from host to container
+COPY --chown=dusr_kevin /home/kevin/vhd1/kflyn825Repos/dockerExample/toolchain /home/dusr_kevin/toolchain
+
+# Extract toolchain archives and remove tar files
+RUN mkdir -p /home/dusr_kevin/riscv/linux-multilib /home/dusr_kevin/riscv/newlib /home/dusr_kevin/arm/aarch64-none-elf /home/dusr_kevin/arm/aarch64-none-linux-gnu /home/dusr_kevin/arm/arm-none-eabi /home/dusr_kevin/arm/arm-none-linux-gnueabihf && \
+    tar -xf /home/dusr_kevin/toolchain/riscv/riscv-linux-mulitib-tool.tar.xz -C /home/dusr_kevin/riscv/linux-multilib && \
+    tar -xf /home/dusr_kevin/toolchain/riscv/riscv-newlib-tool.tar.xz -C /home/dusr_kevin/riscv/newlib && \
+    tar -xf /home/dusr_kevin/toolchain/arm/arm-gnu-toolchain-14.2.rel1-x86_64-aarch64-none-elf.tar.xz -C /home/dusr_kevin/arm/aarch64-none-elf && \
+    tar -xf /home/dusr_kevin/toolchain/arm/arm-gnu-toolchain-14.2.rel1-x86_64-aarch64-none-linux-gnu.tar.xz -C /home/dusr_kevin/arm/aarch64-none-linux-gnu && \
+    tar -xf /home/dusr_kevin/toolchain/arm/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi.tar.xz -C /home/dusr_kevin/arm/arm-none-eabi && \
+    tar -xf /home/dusr_kevin/toolchain/arm/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-linux-gnueabihf.tar.xz -C /home/dusr_kevin/arm/arm-none-linux-gnueabihf && \
+    rm -rf /home/dusr_kevin/toolchain/*.tar.xz
+
+# Add RISC-V and ARM toolchain to PATH
+ENV PATH="/home/dusr_kevin/riscv/linux-multilib/bin:/home/dusr_kevin/riscv/newlib/bin:/home/dusr_kevin/arm/aarch64-none-elf/bin:/home/dusr_kevin/arm/aarch64-none-linux-gnu/bin:/home/dusr_kevin/arm/arm-none-eabi/bin:/home/dusr_kevin/arm/arm-none-linux-gnueabihf/bin:$PATH"
+
+# Verify installation
+#RUN riscv64-unknown-elf-gcc --version && qemu-system-riscv64 --version && openocd --version
+
+CMD ["/bin/bash"]
