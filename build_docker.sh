@@ -10,7 +10,7 @@ docker images -a
 export DOCKER_CLI_EXPERIMENTAL=enabled
 export DOCKER_BUILDKIT=1
 docker buildx create --use
-docker buildx build --pull --cache-from=ubuntu:24.04 \
+docker buildx build --cache-from=ubuntu:24.04 \
 --cache-from=moby/buildkit:buildx-stable-1 \
 -t $username/$reponame:$tag \
 -f $docker_file . --load
