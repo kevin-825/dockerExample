@@ -46,6 +46,12 @@ $RISCV_ISA_SIM/bin:\
 $RISCV_QEMU/bin:\
 $HOME/.local/bin:$PATH"
 
+# copy tools into container
+# 🛠️ Copy prebuilt RISC-V tools into the container
+ARG PRE_BUILT_RV_TOOLS=./pre-built/riscv
+COPY ${PRE_BUILT_RV_TOOLS} ${RISCV}
+
+
 
 # ⛳ Workspace setup
 USER $USER
