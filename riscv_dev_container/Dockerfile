@@ -101,8 +101,11 @@ RUN git clone https://github.com/riscv/riscv-pk.git \
   && make -j$(nproc) && make install
 
 # 🧠 Set PATH
-ENV PATH="$RISCV_NEWLIB/bin:$RISCV_PK/bin:$RISCV_ISA_SIM/bin:$RISCV_QEMU/bin:/home/$USER/.local/bin:$PATH"
-
+ENV PATH="$RISCV_LINUX/bin:$RISCV_NEWLIB/bin:\
+$RISCV_PK/riscv64-unknown-elf/bin:$RISCV_PK/riscv64-unknown-linux-gnu/bin:\
+$RISCV_ISA_SIM/bin:\
+$RISCV_QEMU/bin:\
+$HOME/.local/bin:$PATH"
 
 # ⛳ Workspace setup
 USER $USER

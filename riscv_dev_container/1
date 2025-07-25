@@ -39,3 +39,10 @@ RUN mkdir build-linux && cd build-linux \
   && make -j$(nproc) linux
 
 WORKDIR $CODE_REPO
+
+ENV PATH="$RISCV_LINUX/bin:$RISCV_NEWLIB/bin:\
+$RISCV_PK/riscv64-unknown-elf/bin:$RISCV_PK/riscv64-unknown-linux-gnu/bin:\
+$RISCV_ISA_SIM/bin:\
+$RISCV_QEMU/bin:\
+$HOME/.local/bin:$PATH"
+

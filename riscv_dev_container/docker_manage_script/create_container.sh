@@ -1,6 +1,6 @@
 
 container_name=$3
-USER=user0
+USER=ubuntu
 if [ -z "$container_name" ]; then
     echo error in container name
 fi
@@ -44,7 +44,7 @@ if [ $? -ne 0 ]; then
       docker rm -f $container_name 2>/dev/null
       echo "🔄 Recreating container..."
       docker run -it --name $container_name \
-        -v $host_dir_for_container/workspaces:/home/user0/workspaces \
+        -v $host_dir_for_container/workspaces:/home/$USER/workspaces \
         -v $host_dir_for_container/root/.bash_history:/root/.bash_history \
         -v /:/hst_root \
         -P $repo:$tag 
@@ -59,7 +59,7 @@ else
 fi
 
 docker port $container_name
-sudo chown -R user0:user0 /home/user0/workspaces
+sudo chown -R $USER:$USER /home/$USER/workspaces
 docker start -ia $container_name
 
 #-u kevin
