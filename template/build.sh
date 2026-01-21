@@ -1,1 +1,1 @@
- docker build -t dockp .
+ docker build -t Template .
